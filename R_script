@@ -1,0 +1,67 @@
+#loading up necessary packages
+library(tidyverse) 
+library(lubridate)
+library(skimr) 
+library(janitor)
+library(dplyr)
+
+#collecting data 
+Trips_202008 <- read_csv('C:/Users/.../202008-divvy-tripdata.csv')
+Trips_202009 <- read_csv('C:/Users/.../202009-divvy-tripdata.csv')
+Trips_202010 <- read_csv('C:/Users/.../202010-divvy-tripdata.csv')
+Trips_202011 <- read_csv('C:/Users/.../202011-divvy-tripdata.csv')
+Trips_202012 <- read_csv('C:/Users/.../202012-divvy-tripdata.csv')
+Trips_202101 <- read_csv('C:/Users/.../202101-divvy-tripdata.csv')
+Trips_202102 <- read_csv('C:/Users/.../202102-divvy-tripdata.csv')
+Trips_202103 <- read_csv('C:/Users/.../202103-divvy-tripdata.csv')
+Trips_202104 <- read_csv('C:/Users/.../202104-divvy-tripdata.csv')
+Trips_202105 <- read_csv('C:/Users/.../202105-divvy-tripdata.csv')
+Trips_202106 <- read_csv('C:/Users/.../202106-divvy-tripdata.csv')
+Trips_202107 <- read_csv('C:/Users/.../202107-divvy-tripdata.csv')
+Trips_202108 <- read_csv('C:/Users/.../202108-divvy-tripdata.csv')
+
+#changing the data types of 
+Trips_202008 <- mutate(Trips_202008, end_station_id =
+                         as.character(end_station_id), start_station_id =
+                         as.character(start_station_id))
+Trips_202009 <- mutate(Trips_202009, end_station_id =
+                         as.character(end_station_id), start_station_id =
+                         as.character(start_station_id))
+Trips_202010 <- mutate(Trips_202010, end_station_id =
+                         as.character(end_station_id), start_station_id =
+                         as.character(start_station_id))
+Trips_202011 <- mutate(Trips_202011, end_station_id =
+                         as.character(end_station_id), start_station_id =
+                         as.character(start_station_id))
+Trips_202012 <- mutate(Trips_202012, end_station_id =
+                         as.character(end_station_id), start_station_id =
+                         as.character(start_station_id))
+			 
+#we compare the data types of collumns in each table to see if they will bind sucessfuly
+compare_df_cols(Trips_202008, Trips_202009, Trips_202010, Trips_202011,
+                Trips_202012, Trips_202101, Trips_202102, Trips_202103, Trips_202104,
+                Trips_202105, Trips_202106, Trips_202107, Trips_202108, return = "mismatch")
+trips_last12months <- bind_rows(Trips_202008, Trips_202009, Trips_202010, Trips_202011,
+                                 Trips_202012, Trips_202101, Trips_202102, Trips_202103, Trips_202104,
+                                 Trips_202105, Trips_202106, Trips_202107, Trips_202108)
+trips_last12months <- trips_last12months %>%
+ 			    select(-c(start_lat, start_lng, end_lat, end_lng))
+str(trips_last12months)
+skim(trips_last12months)
+head(trips_last12months)
+
+trips_last12months$date <- as.Date(trips_last12months$started_at) #The default format is yyyymm-dd
+trips_last12months$month <- format(as.Date(trips_last12months$date), "%m")
+trips_last12months$day <- format(as.Date(trips_last12months$date), "%d")
+trips_last12months$year <- format(as.Date(trips_last12months$date), "%Y")
+trips_last12months$day_of_week <- format(as.Date(trips_last12months$date), "%A")
+trips_last12months$ride_length <- difftime(trips_last12months$ended_at,trips_last12months$started_at)
+
+skim(trips_last12months$ride_length)
+
+trips_last12months_v2<- trips_last12months[!(trips_last12months$ride_length<0),]
+skim(trips_last12months_v2$ride_length)
+skim(trips_last12months_v2)
+
+sample_trips <- sample_n(trips_last12months_v2, 767554, replace=F)
+write.csv(sample_trips, "sample_trips.csv")
